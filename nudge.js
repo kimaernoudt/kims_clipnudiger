@@ -3,7 +3,7 @@
 // no delay, no latency, MIDI passes straight through.
 inlets = 1; outlets = 1;
 var stepMs = 1, targetMs = 0, scope = 0, total = 0, busy = false, job = null, timer = null;
-var pending = 0, tempoCache = null;   // clicks made while busy are added up and run after
+var pending = 0, tempoCache = null;   // clicks are added up and run together
 
 function setstep(v) { stepMs = Math.max(0.1, Number(v)); }
 function settarget(v) { targetMs = Number(v); }
@@ -16,9 +16,21 @@ function reset() {
   if (Math.abs(total + pending) < 0.001) { status("Already at 0 ms."); return; }
   queue(-(total + pending));
 }
+// clicks are collected: the move happens once, 400 ms after the last click,
+// so 10 fast clicks = one move of 10 ms instead of 10 separate moves
+var waitTask = null;
 function queue(d) {
   if (!d) { status("Nothing to move."); return; }
-  if (busy) { pending = round(pending + d, 2); status("Queued " + pending + " ms..."); return; }
+  pending = round(pending + d, 2);
+  status("Will move " + pending + " ms...");
+  if (!waitTask) waitTask = new Task(fire, this);
+  waitTask.cancel();
+  waitTask.schedule(400);
+}
+function fire() {
+  if (busy) { waitTask.schedule(200); return; }
+  var d = pending; pending = 0;
+  if (Math.abs(d) < 0.001) { status("Nothing to move (clicks cancelled out)."); return; }
   start(d);
 }
 function status(t) { outlet(0, "status", t); }
@@ -90,11 +102,15 @@ function readNextTempo() {
   timer.schedule(150);
 }
 
+var probe = null;
 function findClipAt(track, tpath, t) {
+  // the parked copy is after every other clip, so it's normally the last one: check that first
   var n = track.getcount("arrangement_clips");
-  for (var i = 0; i < n; i++) {
-    var a = new LiveAPI(tpath + " arrangement_clips " + i);
-    if (Math.abs(num(a, "start_time") - t) < 1e-6) return Number(a.id);
+  if (!probe) probe = new LiveAPI(tpath);
+  for (var i = n - 1; i >= 0; i--) {
+    probe.path = tpath + " arrangement_clips " + i;
+    var st = num(probe, "start_time");
+    if (Math.abs(st - t) < 1e-6) return Number(probe.id);
   }
   return 0;
 }
@@ -135,7 +151,7 @@ function doMoves() {
   if (skipped) t += " " + skipped + " clip(s) NOT moved (would go before song start).";
   t += " Total now " + total + " ms.";
   status(t);
-  if (pending) { var d = pending; pending = 0; start(d); }
+  // clicks made during the move are picked up by the waiting timer
 }
 
 function fail(why) {
