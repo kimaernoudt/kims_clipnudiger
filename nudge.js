@@ -101,10 +101,19 @@ function findClipAt(track, tpath, t) {
 
 function doMoves() {
   var track = new LiveAPI(job.tpath), moved = 0, skipped = 0, tempos = {};
+  // all or nothing: if one clip can't move (it would go before the song start), move none,
+  // so the light clips always stay in step with each other and NOW stays true
+  for (var c = 0; c < job.items.length; c++) {
+    job.items[c].dest = job.items[c].start + job.dms * job.items[c].tempo / 60000.0;   // ms -> beats at that clip's tempo
+    if (job.items[c].dest < 0) {
+      busy = false; pending = 0;
+      status("NOT moved: a clip sits at the very start of the song and can't go earlier. Leave some empty space before the first light clip.");
+      return;
+    }
+  }
   for (var k = 0; k < job.items.length; k++) {
     var it = job.items[k];
-    var dest = it.start + job.dms * it.tempo / 60000.0;   // ms -> beats at that clip's tempo
-    if (dest < 0) { skipped++; continue; }
+    var dest = it.dest;
     var before = track.getcount("arrangement_clips");
     // via a parking spot after the last clip, so a clip never lands on top of itself
     track.call("duplicate_clip_to_arrangement", "id", it.id, job.temp);

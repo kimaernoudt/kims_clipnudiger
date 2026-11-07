@@ -5,7 +5,7 @@
 //   REF CUES    note D3 (62) - same positions, stands for "everything else", never nudged
 // The display shows how many ms LIGHT arrives before/after REF (average of the last 8 cues).
 inlets = 1; outlets = 1;
-var LIGHT = 60, REF = 62, BEAT_CLIPS = 8, CLIP_LEN = 4, GAP = 8;
+var LIGHT = 60, REF = 62, BEAT_CLIPS = 8, CLIP_LEN = 4, GAP = 8, START = 4;   // first clip at bar 2: room to move earlier
 var now = 0, pendL = null, pendR = null, diffs = [], count = 0;
 
 function status(t) { outlet(0, "status", t); }
@@ -91,11 +91,11 @@ function build() {
     for (var b = 0; b < CLIP_LEN; b++) notes.push({ pitch: made[m][1], start_time: b, duration: 0.25, velocity: 100 });
     clip.call("add_new_notes", { notes: notes });
     clip.set("name", made[m][0]);
-    for (var c = 0; c < BEAT_CLIPS; c++) tr.call("duplicate_clip_to_arrangement", "id", Number(clip.id), c * GAP);
+    for (var c = 0; c < BEAT_CLIPS; c++) tr.call("duplicate_clip_to_arrangement", "id", Number(clip.id), START + c * GAP);
     slot.call("delete_clip");
   }
   song.set("loop_start", 0);
-  song.set("loop_length", BEAT_CLIPS * GAP);
+  song.set("loop_length", START + BEAT_CLIPS * GAP);
   song.set("loop", 1);
   var t2 = "Built. Drag Light Nudge onto LIGHT CUES, press play.";
   if (manual.length) t2 += " Set by hand: " + manual.join("; ") + ".";
