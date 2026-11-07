@@ -29,28 +29,33 @@ box("code", "v8.codebox", [400, 300, 600, 400], code=code, filename="none", font
     fontsize=11.0, numinlets=1, numoutlets=1, outlettype=[""], saved_object_attributes={"parameter_enable": 0})
 
 comment("title", "LIGHT NUDGE  (moves Arrangement clips, no latency)", [30, 100, 300, 18], [4, 2, 250, 16], fontsize=10.0)
-y = 22
-buttons = [("bBack", "< EARLIER", "back", [4, y, 72, 22]), ("bFwd", "LATER >", "fwd", [80, y, 72, 22]),
-           ("bSet", "SET", "goto", [196, y + 28, 50, 18]), ("bZero", "BACK TO 0", "reset", [4, y + 82, 100, 18])]
-for i, (bid, label, msg, pres) in enumerate(buttons):
+# layout: big EARLIER / LATER on top, red BACK TO 0 across the bottom
+buttons = [("bBack", "< EARLIER", "back", [4, 20, 121, 38], 14.0, None),
+           ("bFwd", "LATER >", "fwd", [127, 20, 121, 38], 14.0, None),
+           ("bSet", "SET", "goto", [198, 63, 50, 18], 10.0, None),
+           ("bZero", "BACK TO 0", "reset", [4, 145, 244, 22], 12.0, [0.85, 0.12, 0.12, 1.0])]
+for i, (bid, label, msg, pres, fs, red) in enumerate(buttons):
     x = 30 + i * 110
     button(bid, label, [x, 140, 90, 22], pres)
+    boxes[-1]["box"]["fontsize"] = fs
+    if red:
+        boxes[-1]["box"].update({"bgcolor": red, "bgoncolor": red, "activebgcolor": red, "activebgoncolor": red,
+                                 "textcolor": [1.0, 1.0, 1.0, 1.0], "textoncolor": [1.0, 1.0, 1.0, 1.0],
+                                 "activetextcolor": [1.0, 1.0, 1.0, 1.0], "activetextoncolor": [1.0, 1.0, 1.0, 1.0]})
     obj(bid + "r", "route bang 1", [x, 170, 75, 20], 1, 3, ["", "", ""])
     box(bid + "m", "message", [x, 200, 50, 20], text=msg, numinlets=2, numoutlets=1, outlettype=[""])
     line(bid, 0, bid + "r", 0); line(bid + "r", 0, bid + "m", 0); line(bid + "r", 1, bid + "m", 0); line(bid + "m", 0, "code", 0)
 
-comment("lStep", "step", [500, 100, 40, 18], [156, y + 4, 28, 16])
-numbox("nStep", "Nudge Step", "Step", [500, 140, 50, 15], [184, y + 3, 62, 16], 0.1, 50.0, 1.0)
-comment("lTgt", "type ms:", [600, 100, 60, 18], [4, y + 29, 60, 16])
-numbox("nTgt", "Nudge Target", "Target", [600, 140, 50, 15], [64, y + 29, 70, 16], -1000.0, 1000.0, 0.0)
-comment("lTot", "NOW:", [700, 100, 40, 18], [4, y + 54, 40, 16], fontsize=12.0)
-numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [44, y + 52, 90, 20], -10000.0, 10000.0, 0.0,
+comment("lTgt", "type ms:", [600, 100, 60, 18], [4, 64, 60, 16])
+numbox("nTgt", "Nudge Target", "Target", [600, 140, 50, 15], [64, 64, 70, 16], -1000.0, 1000.0, 0.0)
+comment("lTot", "NOW:", [700, 100, 40, 18], [4, 87, 40, 16], fontsize=12.0)
+numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [44, 85, 90, 20], -10000.0, 10000.0, 0.0,
        ignoreclick=1, fontsize=12.0)
-box("tScope", "live.tab", [800, 140, 100, 18], [140, y + 54, 106, 18], numinlets=1, numoutlets=3,
+box("tScope", "live.tab", [800, 140, 100, 18], [140, 86, 108, 18], numinlets=1, numoutlets=3,
     outlettype=["", "", "float"], parameter_enable=1, varname="Nudge Scope", num_lines_patching=1, num_lines_presentation=1,
     saved_attribute_attributes={"valueof": {"parameter_longname": "Nudge Scope", "parameter_shortname": "Scope",
       "parameter_type": 2, "parameter_enum": ["TRACK", "CLIP"], "parameter_mmax": 1, "parameter_unitstyle": 9}})
-for nid, pre, x in [("nStep", "setstep", 500), ("nTgt", "settarget", 600), ("nTot", "settotal", 700), ("tScope", "setscope", 800)]:
+for nid, pre, x in [("nTgt", "settarget", 600), ("nTot", "settotal", 700), ("tScope", "setscope", 800)]:
     obj(nid + "p", "prepend " + pre, [x, 240, 90, 20], 1, 1, [""])
     line(nid, 0, nid + "p", 0); line(nid + "p", 0, "code", 0)
 
@@ -58,8 +63,8 @@ obj("rt", "route total status", [400, 720, 110, 20], 1, 3, ["", "", ""])
 line("code", 0, "rt", 0); line("rt", 0, "nTot", 0)
 obj("ps", "prepend set", [500, 760, 80, 20], 1, 1, [""])
 line("rt", 1, "ps", 0)
-comment("status", "Stop playback, then click < or >. Cmd+Z undoes.", [500, 800, 250, 50], [108, y + 80, 140, 44],
-        fontsize=9.0, linecount=4)
+comment("status", "Stop playback, then click < or >. Cmd+Z undoes.", [500, 800, 250, 50], [4, 108, 244, 36],
+        fontsize=9.0, linecount=3)
 line("ps", 0, "status", 0)
 
 params = {b["box"]["id"]: [b["box"]["varname"], b["box"]["saved_attribute_attributes"]["valueof"]["parameter_shortname"], 0]
