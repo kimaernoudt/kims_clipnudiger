@@ -28,7 +28,7 @@ line("min", 0, "mout", 0)
 box("code", "v8.codebox", [400, 300, 600, 400], code=code, filename="none", fontface=0, fontname="<Monospaced>",
     fontsize=11.0, numinlets=1, numoutlets=1, outlettype=[""], saved_object_attributes={"parameter_enable": 0})
 
-comment("title", "LIGHT NUDGE  (moves Arrangement clips, no latency)", [30, 100, 300, 18], [4, 2, 250, 16], fontsize=10.0)
+comment("title", "LIGHT NUDGE", [30, 100, 300, 18], [4, 2, 120, 16], fontsize=11.0)
 # layout: big EARLIER / LATER on top, red BACK TO 0 across the bottom
 buttons = [("bBack", "< EARLIER", "back", [4, 20, 121, 38], 14.0, None),
            ("bFwd", "LATER >", "fwd", [127, 20, 121, 38], 14.0, None),
@@ -49,9 +49,9 @@ for i, (bid, label, msg, pres, fs, red) in enumerate(buttons):
 comment("lTgt", "type ms:", [600, 100, 60, 18], [4, 64, 60, 16])
 numbox("nTgt", "Nudge Target", "Target", [600, 140, 50, 15], [64, 64, 70, 16], -1000.0, 1000.0, 0.0)
 comment("lTot", "NOW:", [700, 100, 40, 18], [4, 85, 52, 24], fontsize=18.0)
-numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [58, 82, 100, 28], -10000.0, 10000.0, 0.0,
+numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [58, 82, 190, 28], -10000.0, 10000.0, 0.0,
        ignoreclick=1, fontsize=20.0)
-box("tScope", "live.tab", [800, 140, 100, 18], [162, 87, 86, 18], numinlets=1, numoutlets=3,
+box("tScope", "live.tab", [800, 140, 100, 18], [150, 1, 98, 17], numinlets=1, numoutlets=3,
     outlettype=["", "", "float"], parameter_enable=1, varname="Nudge Scope", num_lines_patching=1, num_lines_presentation=1,
     saved_attribute_attributes={"valueof": {"parameter_longname": "Nudge Scope", "parameter_shortname": "Scope",
       "parameter_type": 2, "parameter_enum": ["TRACK", "CLIP"], "parameter_mmax": 1, "parameter_unitstyle": 9}})
