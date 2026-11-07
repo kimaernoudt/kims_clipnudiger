@@ -21,3 +21,18 @@ For each clip: it copies the clip to a parking spot after the last clip, deletes
 `python3 build.py nudge.js "CABP Light Nudge v1.amxd"` wraps the script in a `v8.codebox` and writes the device.
 
 Status: v1, not tested in Live yet.
+
+## Test set (no light desk needed)
+`CABP Test Rig v1.amxd` builds a test set and acts as a virtual light.
+
+1. Mac: Audio MIDI Setup > MIDI Studio > IAC Driver > "Device is online" (Bus 1).
+2. Live: Settings > Link, Tempo & MIDI: turn on **Track** for IAC Driver (Bus 1) as both input and output.
+3. File > New Live Set. Drag `CABP Test Rig v1.amxd` onto a MIDI track and press **BUILD TEST SET**. It:
+   - turns that track into VIRTUAL LIGHT (input IAC, armed, monitor In),
+   - adds LIGHT CUES (note C3) and REF CUES (note D3), both sending to IAC with 8 identical clips, one cue per beat, the first right at the clip start,
+   - sets 120 BPM and loops the 16 bars.
+4. Drag `CABP Light Nudge v1.amxd` onto LIGHT CUES. Press play.
+5. The LIGHT and REF squares flash on every cue. **LIGHT vs REF (ms)** shows how much earlier (negative) or later the light cues arrive than the reference, averaged over the last 8 cues. It starts around 0.
+6. Stop, click `< EARLIER` 10 times, and play: it should read about -10 while REF keeps flashing on the beat. `BACK TO 0` returns it to about 0.
+
+REF stands for "everything else": it's never nudged, so it shows that only the light clips moved. Timing is measured on arrival over IAC, so expect ±1–2 ms of jitter.
