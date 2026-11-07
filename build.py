@@ -32,7 +32,6 @@ comment("title", "LIGHT NUDGE", [30, 100, 300, 18], [4, 2, 120, 16], fontsize=11
 # layout: big EARLIER / LATER on top, red BACK TO 0 across the bottom
 buttons = [("bBack", "< EARLIER", "back", [4, 20, 121, 38], 14.0, None),
            ("bFwd", "LATER >", "fwd", [127, 20, 121, 38], 14.0, None),
-           ("bSet", "SET", "goto", [198, 63, 50, 18], 10.0, None),
            ("bZero", "BACK TO 0", "reset", [4, 145, 244, 22], 12.0, [0.85, 0.12, 0.12, 1.0])]
 for i, (bid, label, msg, pres, fs, red) in enumerate(buttons):
     x = 30 + i * 110
@@ -46,25 +45,35 @@ for i, (bid, label, msg, pres, fs, red) in enumerate(buttons):
     box(bid + "m", "message", [x, 200, 50, 20], text=msg, numinlets=2, numoutlets=1, outlettype=[""])
     line(bid, 0, bid + "r", 0); line(bid + "r", 0, bid + "m", 0); line(bid + "r", 1, bid + "m", 0); line(bid + "m", 0, "code", 0)
 
-comment("lTgt", "type ms:", [600, 100, 60, 18], [4, 64, 60, 16])
-numbox("nTgt", "Nudge Target", "Target", [600, 140, 50, 15], [64, 64, 70, 16], -1000.0, 1000.0, 0.0)
-comment("lTot", "NOW:", [700, 100, 40, 18], [4, 85, 52, 24], fontsize=18.0)
-numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [58, 82, 190, 28], -10000.0, 10000.0, 0.0,
-       ignoreclick=1, fontsize=20.0)
+comment("lTot", "NOW:", [700, 100, 40, 18], [4, 66, 52, 24], fontsize=18.0)
+numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [58, 63, 190, 30], -1000.0, 1000.0, 0.0,
+       fontsize=20.0)
 box("tScope", "live.tab", [800, 140, 100, 18], [150, 1, 98, 17], numinlets=1, numoutlets=3,
     outlettype=["", "", "float"], parameter_enable=1, varname="Nudge Scope", num_lines_patching=1, num_lines_presentation=1,
     saved_attribute_attributes={"valueof": {"parameter_longname": "Nudge Scope", "parameter_shortname": "Scope",
       "parameter_type": 2, "parameter_enum": ["TRACK", "CLIP"], "parameter_mmax": 1, "parameter_unitstyle": 9}})
-for nid, pre, x in [("nTgt", "settarget", 600), ("nTot", "settotal", 700), ("tScope", "setscope", 800)]:
+for nid, pre, x in [("nTot", "settarget", 700), ("tScope", "setscope", 800)]:
     obj(nid + "p", "prepend " + pre, [x, 240, 90, 20], 1, 1, [""])
     line(nid, 0, nid + "p", 0); line(nid + "p", 0, "code", 0)
 
-obj("rt", "route total status", [400, 720, 110, 20], 1, 3, ["", "", ""])
-line("code", 0, "rt", 0); line("rt", 0, "nTot", 0)
+obj("rt", "route total status waitfire waittempo", [400, 720, 220, 20], 1, 5, ["", "", "", "", ""])
+for k, (src, msg, x) in enumerate([(2, "fire", 650), (3, "tempotick", 760)]):
+    obj("dl%d" % k, "delay", [x, 760, 50, 20], 2, 1, ["bang"])
+    obj("df%d" % k, "deferlow", [x, 790, 60, 20], 1, 1, [""])
+    box("dm%d" % k, "message", [x, 820, 70, 20], text=msg, numinlets=2, numoutlets=1, outlettype=[""])
+    line("rt", src, "dl%d" % k, 0); line("dl%d" % k, 0, "df%d" % k, 0); line("df%d" % k, 0, "dm%d" % k, 0); line("dm%d" % k, 0, "code", 0)
+line("code", 0, "rt", 0)
+obj("pst", "prepend set", [400, 750, 80, 20], 1, 1, [""])   # show the total in NOW without triggering a move
+line("rt", 0, "pst", 0); line("pst", 0, "nTot", 0)
+obj("ltd", "live.thisdevice", [900, 20, 90, 20], 1, 3, ["bang", "int", "int"])
+obj("dly", "delay 1500", [900, 50, 70, 20], 2, 1, ["bang"])
+box("rdy", "message", [900, 80, 60, 20], text="setready", numinlets=2, numoutlets=1, outlettype=[""])
+obj("dfr", "deferlow", [900, 65, 60, 20], 1, 1, [""])
+line("ltd", 0, "dly", 0); line("dly", 0, "dfr", 0); line("dfr", 0, "rdy", 0); line("rdy", 0, "code", 0)
 obj("ps", "prepend set", [500, 760, 80, 20], 1, 1, [""])
 line("rt", 1, "ps", 0)
-comment("status", "Stop playback, then click < or >. Cmd+Z undoes.", [500, 800, 250, 50], [4, 112, 244, 32],
-        fontsize=9.0, linecount=3)
+comment("status", "Stop playback, then click < or > or type a value in NOW. Cmd+Z undoes.", [500, 800, 250, 50], [4, 98, 244, 44],
+        fontsize=9.0, linecount=4)
 line("ps", 0, "status", 0)
 
 params = {b["box"]["id"]: [b["box"]["varname"], b["box"]["saved_attribute_attributes"]["valueof"]["parameter_shortname"], 0]

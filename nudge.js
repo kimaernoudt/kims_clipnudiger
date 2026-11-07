@@ -2,36 +2,43 @@
 // Edits the arrangement only when you click. Does nothing while the set plays:
 // no delay, no latency, MIDI passes straight through.
 inlets = 1; outlets = 1;
-var stepMs = 1, targetMs = 0, scope = 0, total = 0, busy = false, job = null, timer = null;
+var stepMs = 1, scope = 0, total = 0, busy = false, job = null;
 var pending = 0, tempoCache = null;   // clicks are added up and run together
 
 function setstep(v) { stepMs = Math.max(0.1, Number(v)); }
-function settarget(v) { targetMs = Number(v); }
+// NOW is also the type-in field: typing a value moves the clips there automatically.
+// While the set loads, NOW just restores the saved total (ready comes 1.5 s after load).
+var ready = false;
+function setready() { ready = true; }
+function settarget(v) {
+  v = Number(v);
+  if (!ready) { total = v; return; }
+  queue(round(v - total - pending, 2));
+}
 function setscope(v) { scope = Number(v); tempoCache = null; }
-function settotal(v) { total = Number(v); }
 function back() { queue(-stepMs); }          // earlier
 function fwd() { queue(stepMs); }            // later
-function goto() { queue(round(targetMs - total - pending, 2)); }
 function reset() {
   if (Math.abs(total + pending) < 0.001) { status("Already at 0 ms."); return; }
   queue(-(total + pending));
 }
 // clicks are collected: the move happens once, 400 ms after the last click,
 // so 10 fast clicks = one move of 10 ms instead of 10 separate moves
-var waitTask = null;
+// Timing goes through Max objects ([delay] -> [deferlow]) and not a JS Task, so every
+// change to the Live set happens on Live's safe low-priority thread (a Task-driven
+// move crashed Live in v3/v4).
 function queue(d) {
   if (!d) { status("Nothing to move."); return; }
   pending = round(pending + d, 2);
   status("Will move " + pending + " ms...");
-  if (!waitTask) waitTask = new Task(fire, this);
-  waitTask.cancel();
-  waitTask.schedule(400);
+  outlet(0, "waitfire", 400);            // [delay] restarts on every click
 }
 function fire() {
-  if (busy) { waitTask.schedule(200); return; }
+  if (busy) { outlet(0, "waitfire", 200); return; }
   var d = pending; pending = 0;
-  if (Math.abs(d) < 0.001) { status("Nothing to move (clicks cancelled out)."); return; }
-  start(d);
+  if (Math.abs(d) < 0.001) { status("Nothing to move."); outlet(0, "total", total); return; }
+  try { start(d); } catch (e) { busy = false; status("ERROR: " + e + " - use Cmd+Z to undo."); }
+  if (!busy) outlet(0, "total", total);   // also puts NOW back if the move was refused
 }
 function status(t) { outlet(0, "status", t); }
 function num(api, prop) { return Number(api.get(prop)[0]); }
@@ -94,12 +101,13 @@ function readNextTempo() {
     doMoves(); return;
   }
   song.set("current_song_time", job.items[job.idx].start + 0.001);
-  timer = new Task(function () {
-    job.items[job.idx].tempo = num(new LiveAPI("live_set"), "tempo");
-    job.idx++;
-    readNextTempo();
-  }, this);
-  timer.schedule(150);
+  outlet(0, "waittempo", 150);
+}
+function tempotick() {
+  if (!job || !busy) return;
+  job.items[job.idx].tempo = num(new LiveAPI("live_set"), "tempo");
+  job.idx++;
+  readNextTempo();
 }
 
 var probe = null;
