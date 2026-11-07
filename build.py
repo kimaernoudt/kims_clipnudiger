@@ -72,7 +72,7 @@ obj("dfr", "deferlow", [900, 65, 60, 20], 1, 1, [""])
 line("ltd", 0, "dly", 0); line("dly", 0, "dfr", 0); line("dfr", 0, "rdy", 0); line("rdy", 0, "code", 0)
 obj("ps", "prepend set", [500, 760, 80, 20], 1, 1, [""])
 line("rt", 1, "ps", 0)
-comment("status", "Stop playback, then click < or > or type a value in NOW. Cmd+Z undoes.", [500, 800, 250, 50], [4, 98, 244, 44],
+comment("status", "Click < or > or type a value in NOW. Works while playing. Cmd+Z undoes.", [500, 800, 250, 50], [4, 98, 244, 44],
         fontsize=9.0, linecount=4)
 line("ps", 0, "status", 0)
 

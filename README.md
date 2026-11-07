@@ -5,8 +5,8 @@ A Max for Live MIDI effect for Ableton Live 12. It moves the **Arrangement MIDI 
 Built for the Charlotte Adigéry & Bolis Pupul tour to line up the lighting-desk MIDI.
 
 ## Use
-1. Put `CABP Light Nudge v5.amxd` on the MIDI track that sends to the lighting desk.
-2. Stop playback (the device won't move clips while playing).
+1. Put `CABP Light Nudge v6.amxd` on the MIDI track that sends to the lighting desk.
+2. Works while playing. A cue sounding at the exact moment of a move can be cut short or skipped once. With tempo automation, stop once so it can read the tempos.
 3. `< EARLIER` / `LATER >` moves the clips 1 ms per click. Fast clicks are collected and moved in one go, 0.4 s after the last click.
 4. Or type a value (for example -30) in NOW: the clips move there automatically.
 5. `NOW` shows the total offset, saved with the set. `BACK TO 0` returns everything to the original position. Cmd+Z also works.
@@ -18,9 +18,9 @@ ms are converted to beats using the tempo. If the song tempo is automated, it re
 For each clip: it copies the clip to a parking spot after the last clip, deletes the original, copies it back to the new position, and deletes the parking copy (`duplicate_clip_to_arrangement` and `delete_clip`, Live 12). Moving earlier works from the first clip to the last, and moving later from the last to the first, so the clips never overlap.
 
 ## Build
-`python3 build.py nudge.js "CABP Light Nudge v5.amxd"` wraps the script in a `v8.codebox` and writes the device.
+`python3 build.py nudge.js "CABP Light Nudge v6.amxd"` wraps the script in a `v8.codebox` and writes the device.
 
-Status: v5: type a value in NOW and it moves automatically (no SET), and the timers run via [delay]+[deferlow] and not a JS Task (v3/v4 crashed Live). v4 (bigger arrows, no step field, red BACK TO 0 at the bottom). v3: v1 tested 2026-11-07 (-30 ms set, -29.3 ms measured). v2: all-or-nothing moves. v3: clicks collected into one move (Live nearly hung on fast clicks), faster clip lookup.
+Status: v6: works while playing. v5: type a value in NOW and it moves automatically (no SET), and the timers run via [delay]+[deferlow] and not a JS Task (v3/v4 crashed Live). v4 (bigger arrows, no step field, red BACK TO 0 at the bottom). v3: v1 tested 2026-11-07 (-30 ms set, -29.3 ms measured). v2: all-or-nothing moves. v3: clicks collected into one move (Live nearly hung on fast clicks), faster clip lookup.
 
 ## Test set (no light desk needed)
 `CABP Test Rig v2.amxd` builds a test set and acts as a virtual light.
@@ -31,7 +31,7 @@ Status: v5: type a value in NOW and it moves automatically (no SET), and the tim
    - turns that track into VIRTUAL LIGHT (input IAC, armed, monitor In),
    - adds LIGHT CUES (note C3) and REF CUES (note D3), both sending to IAC with 8 identical clips, one cue per beat, the first right at the clip start, starting at bar 2,
    - sets 120 BPM and loops the 16 bars.
-4. Drag `CABP Light Nudge v5.amxd` onto LIGHT CUES. Press play.
+4. Drag `CABP Light Nudge v6.amxd` onto LIGHT CUES. Press play.
 5. The LIGHT and REF squares flash on every cue. **LIGHT vs REF (ms)** shows how much earlier (negative) or later the light cues arrive than the reference, averaged over the last 8 cues. It starts around 0.
 6. Stop, click `< EARLIER` 10 times, and play: it should read about -10 while REF keeps flashing on the beat. `BACK TO 0` returns it to about 0.
 

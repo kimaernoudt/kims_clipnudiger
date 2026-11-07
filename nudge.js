@@ -47,7 +47,9 @@ function round(x, d) { var m = Math.pow(10, d); return Math.round(x * m) / m; }
 
 function start(dms) {
   var song = new LiveAPI("live_set");
-  if (num(song, "is_playing") === 1) { pending = 0; status("Stop playback first (safety), then click again."); return; }
+  // works while playing too (Kim, v6). Only risk: a cue sounding at the exact moment of the move
+  // can be cut short or skipped once.
+  var playing = num(song, "is_playing") === 1;
 
   var track, items = [];
   if (scope === 1) {
@@ -85,6 +87,11 @@ function start(dms) {
     var ordered = items.slice().sort(function (x, y) { return x.start - y.start; });
     for (var q = 0; q < ordered.length; q++) ordered[q].tempo = tempoCache[q];
     doMoves();
+  } else if (playing) {
+    // reading the tempo per clip needs to park the playhead, which can't happen mid-song
+    busy = false; pending = 0;
+    status("Tempo automation found: stop playback ONCE so I can read the tempos, then it works while playing.");
+    return;
   } else {
     status("Tempo automation found: reading the tempo at each clip...");
     readNextTempo();
