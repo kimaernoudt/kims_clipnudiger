@@ -48,10 +48,10 @@ for i, (bid, label, msg, pres, fs, red) in enumerate(buttons):
 
 comment("lTgt", "type ms:", [600, 100, 60, 18], [4, 64, 60, 16])
 numbox("nTgt", "Nudge Target", "Target", [600, 140, 50, 15], [64, 64, 70, 16], -1000.0, 1000.0, 0.0)
-comment("lTot", "NOW:", [700, 100, 40, 18], [4, 87, 40, 16], fontsize=12.0)
-numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [44, 85, 90, 20], -10000.0, 10000.0, 0.0,
-       ignoreclick=1, fontsize=12.0)
-box("tScope", "live.tab", [800, 140, 100, 18], [140, 86, 108, 18], numinlets=1, numoutlets=3,
+comment("lTot", "NOW:", [700, 100, 40, 18], [4, 85, 52, 24], fontsize=18.0)
+numbox("nTot", "Nudge Total", "Total", [700, 140, 50, 15], [58, 82, 100, 28], -10000.0, 10000.0, 0.0,
+       ignoreclick=1, fontsize=20.0)
+box("tScope", "live.tab", [800, 140, 100, 18], [162, 87, 86, 18], numinlets=1, numoutlets=3,
     outlettype=["", "", "float"], parameter_enable=1, varname="Nudge Scope", num_lines_patching=1, num_lines_presentation=1,
     saved_attribute_attributes={"valueof": {"parameter_longname": "Nudge Scope", "parameter_shortname": "Scope",
       "parameter_type": 2, "parameter_enum": ["TRACK", "CLIP"], "parameter_mmax": 1, "parameter_unitstyle": 9}})
@@ -63,7 +63,7 @@ obj("rt", "route total status", [400, 720, 110, 20], 1, 3, ["", "", ""])
 line("code", 0, "rt", 0); line("rt", 0, "nTot", 0)
 obj("ps", "prepend set", [500, 760, 80, 20], 1, 1, [""])
 line("rt", 1, "ps", 0)
-comment("status", "Stop playback, then click < or >. Cmd+Z undoes.", [500, 800, 250, 50], [4, 108, 244, 36],
+comment("status", "Stop playback, then click < or >. Cmd+Z undoes.", [500, 800, 250, 50], [4, 112, 244, 32],
         fontsize=9.0, linecount=3)
 line("ps", 0, "status", 0)
 
